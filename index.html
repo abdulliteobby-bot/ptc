@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบันทึกการลา</title>
+  <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+  <style>
+  :root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --info: #4895ef;
+    --warning: #f72585;
+    --danger: #e63946;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --gray: #6c757d;
+    --bg-dark: #121212;
+    --card-dark: #1e1e1e;
+    --text-light: #f8f9fa;
+    --text-dark: #212529;
+    --bg-light: #f8f9fa;
+    --card-light: #ffffff;
+    --card-gray: #f0f2f5;
+    --card-gray-dark: #2a2a2a;
+  }
+  [data-theme="light"] {
+    --bg-primary: var(--bg-light);
+    --bg-secondary: var(--card-light);
+    --text-primary: var(--text-dark);
+    --text-secondary: var(--gray);
+    --card-bg: var(--card-gray);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+  [data-theme="dark"] {
+    --bg-primary: var(--bg-dark);
+    --bg-secondary: var(--card-dark);
+    --text-primary: var(--text-light);
+    --text-secondary: var(--gray);
+    --card-bg: var(--card-gray-dark);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 15px;
+  }
+  .container {
+    max-width: 100%;
+    width: min(1200px, 100% - 30px);
+    margin: 0 auto;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+    background: var(--card-bg);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+  }
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+  }
+  .logo {
+    max-width: 120px;
+    height: auto;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  h1 {
+    font-size: clamp(1.8rem, 5vw, 2.2rem);
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .subtitle {
+    color: var(--primary);
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 600;
+    margin-top: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+  }
+  .card-title {
+    font-size: clamp(1.2rem, 4vw, 1.4rem);
+    margin-bottom: 15px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    min-height: 40px;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
+  }
+  button {
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 300px;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+  }
+  button.secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+  button.secondary:hover {
+    background: var(--bg-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .user-type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .user-type-btn {
+    flex: 1;
+    max-width: 250px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    background: var(--card-bg);
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+  }
+  .user-type-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+  }
+  .user-type-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+  }
+  .user-type-btn i {
+    font-size: clamp(2rem, 6vw, 2.2rem);
+    margin-bottom: 10px;
+  }
+  .employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+    gap: 15px;
+    margin-top: 15px;
+  }
+  .employee-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+  }
+  .employee-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+  }
+  .employee-name {
+    font-size: clamp(1.1rem, 3.5vw, 1.2rem);
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .employee-details {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  }
+  .leave-progress {
+    margin-bottom: 10px;
+  }
+  .progress-bar {
+    height: 10px;
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(0.75rem, 2vw, 0.8rem);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .progress-used {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .progress-remaining {
+    color: var(--success);
+    font-weight: 600;
+  }
+  .custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .custom-checkbox input {
+    width: auto;
+    min-height: auto;
+  }
+  .flex-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .flex-group .form-group {
+    flex: 1;
+    min-width: min(250px, 100%);
+  }
+  .hidden {
+    display: none;
+  }
+  .back-button {
+    margin-bottom: 15px;
+    width: auto;
+    max-width: 200px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: clamp(0.7rem, 2vw, 0.75rem);
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .badge-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .search-input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    width: 100%;
+  }
+  .search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
+  }
+  .approval-card {
+    overflow-x: auto;
+    width: 100%;
+    padding: 0;
+  }
+  .approval-card .card-body {
+    padding: 20px;
+  }
+  table.dataTable {
+    font-size: 0.9rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--bg-secondary);
+    box-shadow: none;
+    color: var(--text-primary);
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+  }
+  table.dataTable thead {
+    background: linear-gradient(90deg, #ffc107, #ffca2c);
+    color: #1a237e;
+    font-weight: 700;
+  }
+  table.dataTable th, table.dataTable td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+  }
+  table.dataTable tbody tr:hover {
+    background: var(--card-bg);
+    transition: background 0.2s ease;
+  }
+  td.Approve {
+    font-weight: bold;
+    color: #28a745;
+    background: #e6f4ea;
+    border-radius: 5px;
+    padding: 8px;
+  }
+  td.Reject {
+    font-weight: bold;
+    color: #dc3545;
+    background: #f8d7da;
+    border-radius: 5px;
+    padding: 8px;
+  }
+  .form-select {
+    border-radius: 8px;
+    padding: 6px;
+    font-size: 0.85rem;
+    max-width: 120px;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 8px;
+    margin: 5px;
+    background: #1a237e;
+    color: white !important;
+    padding: 6px 12px;
+    transition: background 0.3s ease;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #3949ab;
+  }
+  .dataTables_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .dataTables_wrapper .dataTables_length select {
+    border-radius: 8px;
+    padding: 6px;
+  }
+  [data-theme="dark"] table.dataTable thead {
+    background: linear-gradient(90deg, #1a237e, #3949ab);
+    color: #ffc107;
+  }
+  [data-theme="dark"] td.Approve {
+    background: #28a745;
+    color: #e6f4ea;
+  }
+  [data-theme="dark"] td.Reject {
+    background: #dc3545;
+    color: #f8d7da;
+  }
+  [data-theme="dark"] .dataTables_wrapper .dataTables_length select {
+    color: #212529;
+    background: #f8f9fa;
+    border: 1px solid #6c757d;
+  }
+  [data-theme="dark"] .dataTables_wrapper .dataTables_length label {
+    color: #f8f9fa;
+  }
+  [data-theme="dark"] table.dataTable td.dtfc-fixed-left {
+    color: #212529;
+    background: #f8f9fa;
+  }
+  [data-theme="dark"] table.dataTable thead th.dtfc-fixed-left {
+    color: #1a237e;
+  }
+  .dataTables_wrapper .dataTable-responsive-modal {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+  }
+  .swal2-textarea {
+    background: #2a2a2a !important;
+    color: #f8f9fa !important;
+    border: 1px solid #6c757d !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    font-size: 1rem !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  }
+  .swal2-textarea:focus {
+    border-color: #4361ee !important;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3) !important;
+  }
+  [data-theme="dark"] .swal2-popup {
+    background: #2a2a2a !important;
+    color: #f8f9fa !important;
+    border: 1px solid #6c757d !important;
+    border-radius: 10px !important;
+  }
+  [data-theme="dark"] .swal2-title {
+    color: #f8f9fa !important;
+  }
+  [data-theme="dark"] .swal2-content {
+    color: #f8f9fa !important;
+  }
+  [data-theme="dark"] .swal2-html-container {
+    color: #f8f9fa !important;
+  }
+  [data-theme="dark"] .swal2-input,
+  [data-theme="dark"] .swal2-textarea {
+    background: #1e1e1e !important;
+    color: #f8f9fa !important;
+    border: 1px solid #6c757d !important;
+  }
+  [data-theme="dark"] .swal2-input:focus,
+  [data-theme="dark"] .swal2-textarea:focus {
+    border-color: #4361ee !important;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3) !important;
+  }
+  [data-theme="dark"] .swal2-confirm {
+    background: #4361ee !important;
+    color: #ffffff !important;
+  }
+  [data-theme="dark"] .swal2-cancel {
+    background: #6c757d !important;
+    color: #ffffff !important;
+  }
+  [data-theme="dark"] .swal2-icon {
+    color: #f8f9fa !important;
+    border-color: #6c757d !important;
+  }
+  table.dataTable th.dtfc-fixed-left,
+  table.dataTable td.dtfc-fixed-left {
+    background: var(--bg-secondary);
+    z-index: 3;
+    border-right: 1px solid var(--border-color);
+  }
+  table.dataTable thead th.dtfc-fixed-left {
+    background: linear-gradient(90deg, #ffc107, #ffca2c);
+    color: #1a237e;
+  }
+  [data-theme="dark"] table.dataTable thead th.dtfc-fixed-left {
+    background: linear-gradient(90deg, #1a237e, #3949ab);
+    color: #ffc107;
+  }
+  table.dataTable.fixedHeader-floating {
+    background: var(--bg-secondary);
+    z-index: 100;
+  }
+  table.dataTable.fixedHeader-floating thead th {
+    background: linear-gradient(90deg, #ffc107, #ffca2c);
+    color: #1a237e;
+  }
+  [data-theme="dark"] table.dataTable.fixedHeader-floating thead th {
+    background: linear-gradient(90deg, #1a237e, #3949ab);
+    color: #ffc107;
+  }
+  table.dataTable td.dtfc-fixed-left {
+    position: sticky;
+    left: 0;
+  }
+  @media (max-width: 768px) {
+    body {
+      padding: 10px;
+    }
+    .container {
+      width: calc(100% - 20px);
+    }
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      top: 10px;
+      right: 10px;
+    }
+    .theme-toggle i {
+      font-size: 1.2rem;
+    }
+    header {
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .logo {
+      max-width: 100px;
+    }
+    .user-type-selector {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-type-btn {
+      max-width: 100%;
+      width: min(350px, 100%);
+    }
+    .employee-grid {
+      grid-template-columns: 1fr;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    }
+    .flex-group {
+      flex-direction: column;
+    }
+    .flex-group .form-group {
+      min-width: 100%;
+    }
+    .approval-card {
+      padding: 0;
+    }
+    .approval-card .card-body {
+      padding: 15px;
+    }
+    table.dataTable th, table.dataTable td {
+      padding: 8px;
+      font-size: 0.85rem;
+    }
+    .form-select {
+      font-size: 0.8rem;
+      max-width: 100px;
+    }
+    table.dataTable td.dtfc-fixed-left {
+      position: static;
+    }
+  }
+  @media (max-width: 576px) {
+    h1 {
+      font-size: clamp(1.5rem, 5vw, 1.8rem);
+    }
+    .subtitle {
+      font-size: clamp(0.9rem, 3vw, 1rem);
+    }
+    .card {
+      padding: 15px;
+    }
+    .card-title {
+      font-size: clamp(1.1rem, 4vw, 1.2rem);
+    }
+    input, select, textarea {
+      padding: 8px 10px;
+      font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    }
+    .search-input {
+      padding: 8px;
+    }
+    .employee-card {
+      padding: 12px;
+    }
+    .employee-name {
+      font-size: clamp(1rem, 3.5vw, 1.1rem);
+    }
+    .progress-label {
+      font-size: clamp(0.7rem, 2vw, 0.75rem);
+    }
+    .approval-card .card-body {
+      padding: 10px;
+    }
+    table.dataTable th, table.dataTable td {
+      padding: 6px;
+      font-size: 0.8rem;
+    }
+    .form-select {
+      font-size: 0.75rem;
+      max-width: 90px;
+    }
+  }
+  .header-title {
+    background: linear-gradient(90deg, #ffc107, #ffca2c);
+    color: #1a237e;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+  }
+  .header-title:hover {
+    transform: translateY(-5px);
+  }
+  .logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin-bottom: 20px;
+  }
+  .logout-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body data-theme="dark">
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <i class="fas fa-moon" id="theme-icon"></i>
+  </div>
+  <div class="container">
+    <div id="userTypeSection">
+      <header>
+        <img src="https://lh5.googleusercontent.com/d/1KF8Kq6So276w1p3BKBxvoVjkBgOTGNPh" alt="โลโก้ระบบ" class="logo">
+        <h1><i class="fas fa-calendar-alt"></i> ระบบบันทึกการลา</h1>
+        <p class="subtitle">ระบบจัดการวันลาพนักงานแบบครบวงจร</p>
+      </header>
+      <div class="user-type-selector">
+        <div class="user-type-btn" onclick="selectUserType('admin')">
+          <i class="fas fa-user-shield"></i>
+          <h3>ผู้ดูแลระบบ</h3>
+          <p>จัดการข้อมูลการลาของพนักงานทั้งหมด</p>
+        </div>
+        <div class="user-type-btn" onclick="selectUserType('user')">
+          <i class="fas fa-user"></i>
+          <h3>พนักงาน</h3>
+          <p>บันทึกและตรวจสอบการลาของคุณ</p>
+        </div>
+        <div class="user-type-btn" onclick="selectUserType('approver')">
+          <i class="fas fa-check-circle"></i>
+          <h3>ผู้อนุมัติ</h3>
+          <p>อนุมัติการลาของพนักงาน</p>
+        </div>
+      </div>
+    </div>
+    <div id="loginSection" class="hidden">
+      <button class="back-button secondary" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> กลับไปเลือกประเภทผู้ใช้
+      </button>
+      <div class="card">
+        <h2 class="card-title" id="loginTitle"></h2>
+        <div id="adminLoginForm" class="hidden">
+          <div class="form-group">
+            <label for="adminPassword"><i class="fas fa-key"></i> รหัสผ่าน Admin</label>
+            <input type="password" id="adminPassword" placeholder="กรอกรหัสผ่านผู้ดูแลระบบ">
+          </div>
+          <button onclick="login('admin')">
+            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+          </button>
+        </div>
+        <div id="userLoginForm" class="hidden">
+          <div class="form-group">
+            <label for="userCode"><i class="fas fa-id-card"></i> รหัสพนักงาน</label>
+            <input type="text" id="userCode" list="employeeCodes" placeholder="พิมพ์หรือเลือกรหัสพนักงาน">
+            <datalist id="employeeCodes"></datalist>
+          </div>
+          <div class="form-group">
+            <label for="userPassword"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+            <input type="password" id="userPassword" placeholder="กรอกรหัสผ่าน">
+          </div>
+          <button onclick="login('user')">
+            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+          </button>
+        </div>
+        <div id="approverLoginForm" class="hidden">
+          <div class="form-group">
+            <label for="approverName"><i class="fas fa-user"></i> ชื่อผู้ใช้</label>
+            <input type="text" id="approverName" placeholder="กรอกรหัสผู้อนุมัติ (ad01 หรือ ad02)">
+          </div>
+          <div class="form-group">
+            <label for="approverPassword"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+            <input type="password" id="approverPassword" placeholder="กรอกรหัสผ่าน">
+          </div>
+          <button onclick="login('approver')">
+            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="adminSection" class="hidden">
+      <header>
+        <img src="https://lh5.googleusercontent.com/d/1KF8Kq6So276w1p3BKBxvoVjkBgOTGNPh" alt="โลโก้ระบบ" class="logo">
+        <h1><i class="fas fa-user-shield"></i> ผู้ดูแลระบบ</h1>
+        <div class="flex-group" style="justify-content: center; margin-top: 15px;">
+          <button class="secondary" onclick="switchToLogin()">
+            <i class="fas fa-sign-out-alt"></i> เปลี่ยนผู้ใช้
+          </button>
+        </div>
+      </header>
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-users"></i> พนักงานทั้งหมด</h2>
+        <input type="text" class="search-input" id="employeeSearch" placeholder="ค้นหาพนักงานโดยรหัสหรือชื่อ..." oninput="searchEmployees()">
+        <div id="employeesContainer" class="employee-grid">
+        </div>
+      </div>
+    </div>
+    <div id="userSection" class="hidden">
+      <header>
+        <img src="https://lh5.googleusercontent.com/d/1KF8Kq6So276w1p3BKBxvoVjkBgOTGNPh" alt="โลโก้ระบบ" class="logo">
+        <h1><i class="fas fa-user"></i> ข้อมูลพนักงาน</h1>
+        <div class="flex-group" style="justify-content: center; margin-top: 15px;">
+          <button class="secondary" onclick="switchToLogin()">
+            <i class="fas fa-sign-out-alt"></i> เปลี่ยนผู้ใช้
+          </button>
+        </div>
+      </header>
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-id-card"></i> ข้อมูลของฉัน</h2>
+        <div id="userInfoContainer">
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-calendar-plus"></i> ฟอร์มบันทึกการลา</h2>
+        <div id="leaveForm">
+          <div class="form-group">
+            <label for="leaveType">ประเภทการลา</label>
+            <select id="leaveType" onchange="updateLeaveBalance()">
+              <option value="">-- เลือกประเภทการลา --</option>
+              <option value="สาย">มาสาย</option>
+              <option value="ลาป่วย">ลาป่วย</option>
+              <option value="ลากิจ">ลากิจ</option>
+              <option value="ลาพักผ่อน">ลาพักผ่อน</option>
+              <option value="ลาคลอด">ลาคลอด</option>
+              <option value="ลาบวช">ลาบวช</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>วันลาที่เหลือ: <span id="leaveBalance" class="badge badge-primary">0</span> วัน</label>
+            <div class="progress-bar">
+              <div id="leaveProgressBar" class="progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="flex-group">
+            <div class="form-group">
+              <label for="startDate">เริ่มต้น</label>
+              <input type="date" id="startDate" onchange="calculateDays()">
+            </div>
+            <div class="form-group">
+              <label for="endDate">สิ้นสุด</label>
+              <input type="date" id="endDate" onchange="calculateDays()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="totalDays">จำนวนวันลา</label>
+            <input type="number" id="totalDays" min="0.5" step="0.5" value="1" readonly>
+            <div class="custom-checkbox">
+              <input type="checkbox" id="manualDays" onchange="toggleManualDays()">
+              <label for="manualDays">แก้ไขจำนวนวันด้วยตนเอง</label>
+            </div>
+            <div id="leavePeriodGroup" style="display:none; margin-top:10px;">
+              <label for="leavePeriod">ช่วงเวลาลา</label>
+              <select id="leavePeriod" onchange="updateLeavePeriod()">
+                <option value="เต็มวัน">เต็มวัน</option>
+                <option value="ลาช่วงเช้า">ลาช่วงเช้า</option>
+                <option value="ลาช่วงบ่าย">ลาช่วงบ่าย</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="remark">หมายเหตุ</label>
+            <textarea id="remark" rows="3" placeholder="กรอกหมายเหตุ (ถ้ามี)"></textarea>
+          </div>
+          <button onclick="submitLeave()">
+            <i class="fas fa-paper-plane"></i> ส่งคำขอลา
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="approverSection" class="hidden">
+      <header>
+        <img src="https://lh5.googleusercontent.com/d/1KF8Kq6So276w1p3BKBxvoVjkBgOTGNPh" alt="โลโก้ระบบ" class="logo">
+        <h1><i class="fas fa-check-circle"></i> ระบบอนุมัติการลา</h1>
+        <div class="flex-group" style="justify-content: center; margin-top: 15px;">
+          <button class="secondary" onclick="switchToLogin()">
+            <i class="fas fa-sign-out-alt"></i> เปลี่ยนผู้ใช้
+          </button>
+          <button type="button" onclick="logoutApprover()" class="logout-btn">
+            <i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ
+          </button>
+        </div>
+      </header>
+      <div class="card approval-card">
+        <div class="card-body">
+          <table id="approvalTable" class="display responsive nowrap" style="width:100%">
+            <thead class="bg-warning"></thead>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+  <script>
+    let currentUser = null;
+    let currentEmployee = null;
+    let employeesData = [];
+    let currentTheme = 'dark';
+    let userRefreshInterval;
+    let adminRefreshInterval;
+    let approverRefreshInterval;
+    let lastSearchTerm = '';
+    let approvalTable;
+    let approverName;
+    let user1;
+    let user2;
+    let isUpdating = false;
+    let isChangingPage = false;
+
+
+    function formatThaiDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      const monthNames = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      ];
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear() + 543;
+      return `${day} ${month} ${year}`;
+    }
+
+
+    function toggleTheme() {
+      const themeIcon = document.getElementById('theme-icon');
+      if (currentTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'light');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+        currentTheme = 'light';
+      } else {
+        document.body.setAttribute('data-theme', 'dark');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+        currentTheme = 'dark';
+      }
+      if (approvalTable) {
+        approvalTable.fixedHeader.adjust();
+      }
+    }
+
+
+    function selectUserType(type) {
+      document.querySelectorAll('.user-type-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('userTypeSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
+      if (type === 'admin') {
+        document.getElementById('loginTitle').innerHTML = '<i class="fas fa-user-shield"></i> เข้าสู่ระบบผู้ดูแล';
+        document.getElementById('adminLoginForm').classList.remove('hidden');
+        document.getElementById('userLoginForm').classList.add('hidden');
+        document.getElementById('approverLoginForm').classList.add('hidden');
+      } else if (type === 'user') {
+        document.getElementById('loginTitle').innerHTML = '<i class="fas fa-user"></i> เข้าสู่ระบบพนักงาน';
+        document.getElementById('adminLoginForm').classList.add('hidden');
+        document.getElementById('userLoginForm').classList.remove('hidden');
+        document.getElementById('approverLoginForm').classList.add('hidden');
+        loadEmployeeCodes();
+      } else if (type === 'approver') {
+        document.getElementById('loginTitle').innerHTML = '<i class="fas fa-check-circle"></i> เข้าสู่ระบบผู้อนุมัติ';
+        document.getElementById('adminLoginForm').classList.add('hidden');
+        document.getElementById('userLoginForm').classList.add('hidden');
+        document.getElementById('approverLoginForm').classList.remove('hidden');
+      }
+    }
+
+
+    function loadEmployeeCodes() {
+      google.script.run.withSuccessHandler(function(codes) {
+        const datalist = document.getElementById('employeeCodes');
+        datalist.innerHTML = '';
+        codes.forEach(code => {
+          const option = document.createElement('option');
+          option.value = code;
+          datalist.appendChild(option);
+        });
+      }).getEmployeeCodes();
+    }
+
+
+    function goBack() {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('userTypeSection').classList.remove('hidden');
+      document.getElementById('adminLoginForm').classList.add('hidden');
+      document.getElementById('userLoginForm').classList.add('hidden');
+      document.getElementById('approverLoginForm').classList.add('hidden');
+    }
+
+
+    function switchToLogin() {
+      document.getElementById('adminSection').classList.add('hidden');
+      document.getElementById('userSection').classList.add('hidden');
+      document.getElementById('approverSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
+      if (userRefreshInterval) clearInterval(userRefreshInterval);
+      if (adminRefreshInterval) clearInterval(adminRefreshInterval);
+      if (approverRefreshInterval) clearInterval(approverRefreshInterval);
+      lastSearchTerm = '';
+      if (approvalTable) {
+        approvalTable.destroy();
+        document.getElementById('approvalTable').innerHTML = '';
+      }
+    }
+
+
+    function login(type) {
+      let code, password, name;
+      if (type === 'admin') {
+        password = document.getElementById('adminPassword').value;
+        code = 'admin';
+      } else if (type === 'user') {
+        code = document.getElementById('userCode').value;
+        password = document.getElementById('userPassword').value;
+      } else if (type === 'approver') {
+        name = document.getElementById('approverName').value;
+        password = document.getElementById('approverPassword').value;
+      }
+      if ((type === 'admin' && !password) || (type === 'user' && (!code || !password)) || (type === 'approver' && (!name || !password))) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ผิดพลาด',
+          text: 'กรุณากรอกข้อมูลให้ครบถ้วน'
+        });
+        return;
+      }
+      Swal.fire({
+        title: 'กำลังเข้าสู่ระบบ',
+        text: 'กรุณารอสักครู่...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      if (type === 'approver') {
+        google.script.run.withSuccessHandler(function(success) {
+          Swal.close();
+          if (success) {
+            approverName = name;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('approverSection').classList.remove('hidden');
+            google.script.run.withSuccessHandler(showApprovalData).getApprovalData();
+            approverRefreshInterval = setInterval(() => {
+              if (!document.hidden) refreshApprovalData();
+            }, 30000);
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เข้าสู่ระบบไม่สำเร็จ',
+              text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+            });
+          }
+        }).withFailureHandler(function(error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: error.message
+          });
+        }).checkApproverLogin(name, password);
+      } else {
+        google.script.run.withSuccessHandler(function(result) {
+          Swal.close();
+          if (result.success) {
+            currentUser = { type, code, password };
+            if (type === 'admin') {
+              document.getElementById('loginSection').classList.add('hidden');
+              document.getElementById('adminSection').classList.remove('hidden');
+              loadEmployees();
+              adminRefreshInterval = setInterval(() => {
+                if (!document.hidden) {
+                  refreshEmployees();
+                }
+              }, 10000);
+            } else {
+              currentEmployee = result.employee;
+              document.getElementById('loginSection').classList.add('hidden');
+              document.getElementById('userSection').classList.remove('hidden');
+              loadUserData();
+              resetLeaveForm();
+              userRefreshInterval = setInterval(() => {
+                if (!document.hidden) refreshUserData();
+              }, 10000);
+            }
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เข้าสู่ระบบไม่สำเร็จ',
+              text: result.message
+            });
+          }
+        }).withFailureHandler(function(error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: error.message
+          });
+        }).verifyPassword(type, code, password);
+      }
+    }
+
+
+    function refreshUserData() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentEmployee = result.employee;
+            loadUserData();
+            updateLeaveBalance();
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Refresh error:', error);
+        })
+        .verifyPassword('user', currentUser.code, currentUser.password);
+    }
+
+
+    function refreshEmployees() {
+      const searchInput = document.getElementById('employeeSearch');
+      const wasFocused = document.activeElement === searchInput;
+      lastSearchTerm = searchInput.value.toLowerCase();
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const dataChanged = JSON.stringify(data) !== JSON.stringify(employeesData);
+          if (dataChanged) {
+            employeesData = data;
+            renderEmployees(data);
+            searchInput.value = lastSearchTerm;
+            if (lastSearchTerm) searchEmployees();
+            if (wasFocused) searchInput.focus();
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Refresh error:', error);
+        })
+        .getEmployeesWithUsed();
+    }
+
+
+    function loadEmployees() {
+      Swal.fire({
+        title: 'กำลังโหลดข้อมูล',
+        text: 'กรุณารอสักครู่...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      google.script.run.withSuccessHandler(function(data) {
+        Swal.close();
+        employeesData = data;
+        renderEmployees(data);
+      }).withFailureHandler(function(error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: error.message
+        });
+      }).getEmployeesWithUsed();
+    }
+
+
+    function renderEmployees(data) {
+      const container = document.getElementById('employeesContainer');
+      const newContainer = document.createElement('div');
+      newContainer.className = 'employee-grid';
+      data.forEach(employee => {
+        const card = document.createElement('div');
+        card.className = 'employee-card';
+        card.dataset.name = employee.name.toLowerCase();
+        card.dataset.code = employee.code.toLowerCase();
+        const leaveTypes = ['สาย', 'ลาป่วย', 'ลากิจ', 'ลาพักผ่อน', 'ลาคลอด', 'ลาบวช'];
+        const remainingValues = [employee.late, employee.sick, employee.business, employee.vacation, employee.maternity, employee.ordination];
+        let progressBarsHTML = '';
+        for (let i = 0; i < leaveTypes.length; i++) {
+          const used = employee.used[leaveTypes[i]];
+          const remaining = remainingValues[i];
+          const max = used + remaining;
+          const percent = max > 0 ? Math.min(100, (used / max) * 100) : 0;
+          let progressColor = '#4CAF50';
+          const remainingRatio = max > 0 ? remaining / max : 1;
+          if (remainingRatio <= 0.2) {
+            progressColor = '#F44336';
+          } else if (remainingRatio <= 0.5) {
+            progressColor = '#FFC107';
+          }
+          progressBarsHTML += `
+            <div class="leave-progress">
+              <div class="progress-label">
+                <span>${leaveTypes[i]}</span>
+                <span class="progress-used">ใช้ไป ${used} วัน</span>
+                <span class="progress-remaining">เหลือ ${remaining} วัน</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${percent}%; background: ${progressColor}"></div>
+              </div>
+            </div>
+          `;
+        }
+        card.innerHTML = `
+          <h3 class="employee-name">${employee.name} <span class="badge badge-primary">${employee.code}</span></h3>
+          <div class="employee-details">
+            <div>แผนก: ${employee.section}</div>
+            <div>ตำแหน่ง: ${employee.position}</div>
+          </div>
+          ${progressBarsHTML}
+          <button class="btn btn-sm btn-warning" onclick="editEmployee('${employee.code}')"><i class="fas fa-edit"></i> แก้ไข</button>
+        `;
+        newContainer.appendChild(card);
+      });
+      container.replaceWith(newContainer);
+      newContainer.id = 'employeesContainer';
+    }
+
+
+    function searchEmployees() {
+      lastSearchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+      const cards = document.querySelectorAll('.employee-card');
+      cards.forEach(card => {
+        const name = card.dataset.name;
+        const code = card.dataset.code;
+        card.style.display = (name.includes(lastSearchTerm) || code.includes(lastSearchTerm)) ? '' : 'none';
+      });
+    }
+
+
+    function editEmployee(code) {
+      let emp = employeesData.find(e => e.code === code);
+      Swal.fire({
+        title: 'แก้ไขวันลาเหลือ ' + emp.name,
+        html: `
+          <div class="form-group">
+            <label>สาย</label>
+            <input type="number" step="0.5" id="editLate" value="${emp.late}">
+          </div>
+          <div class="form-group">
+            <label>ลาป่วย</label>
+            <input type="number" step="0.5" id="editSick" value="${emp.sick}">
+          </div>
+          <div class="form-group">
+            <label>ลากิจ</label>
+            <input type="number" step="0.5" id="editBusiness" value="${emp.business}">
+          </div>
+          <div class="form-group">
+            <label>ลาพักผ่อน</label>
+            <input type="number" step="0.5" id="editVacation" value="${emp.vacation}">
+          </div>
+          <div class="form-group">
+            <label>ลาคลอด</label>
+            <input type="number" step="0.5" id="editMaternity" value="${emp.maternity}">
+          </div>
+          <div class="form-group">
+            <label>ลาบวช</label>
+            <input type="number" step="0.5" id="editOrdination" value="${emp.ordination}">
+          </div>
+        `,
+        width: '450px',
+        showCancelButton: true,
+        confirmButtonText: 'บันทึก',
+        cancelButtonText: 'ยกเลิก',
+        showCloseButton: true,
+        focusConfirm: false,
+        preConfirm: () => {
+          return {
+            late: document.getElementById('editLate').value,
+            sick: document.getElementById('editSick').value,
+            business: document.getElementById('editBusiness').value,
+            vacation: document.getElementById('editVacation').value,
+            maternity: document.getElementById('editMaternity').value,
+            ordination: document.getElementById('editOrdination').value
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          google.script.run.withSuccessHandler((res) => {
+            if (res.success) {
+              Swal.fire('บันทึกสำเร็จ', '', 'success');
+              refreshEmployees();
+            } else {
+              Swal.fire('ผิดพลาด', res.message, 'error');
+            }
+          }).updateEmployee(code, result.value);
+        }
+      });
+    }
+
+
+    function loadUserData() {
+      const container = document.getElementById('userInfoContainer');
+      const leaveTypes = ['สาย', 'ลาป่วย', 'ลากิจ', 'ลาพักผ่อน', 'ลาคลอด', 'ลาบวช'];
+      const remainingValues = [
+        currentEmployee.late,
+        currentEmployee.sick,
+        currentEmployee.business,
+        currentEmployee.vacation,
+        currentEmployee.maternity,
+        currentEmployee.ordination
+      ];
+      let progressBarsHTML = '';
+      for (let i = 0; i < leaveTypes.length; i++) {
+        const used = currentEmployee.used[leaveTypes[i]];
+        const remaining = remainingValues[i];
+        const max = used + remaining;
+        const percent = max > 0 ? Math.min(100, (used / max) * 100) : 0;
+        let progressColor = '#4CAF50';
+        const remainingRatio = max > 0 ? remaining / max : 1;
+        if (remainingRatio <= 0.2) {
+          progressColor = '#F44336';
+        } else if (remainingRatio <= 0.5) {
+          progressColor = '#FFC107';
+        }
+        progressBarsHTML += `
+          <div class="leave-progress">
+            <div class="progress-label">
+              <span>${leaveTypes[i]}</span>
+              <span class="progress-used">ใช้ไป ${used} วัน</span>
+              <span class="progress-remaining">เหลือ ${remaining} วัน</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${percent}%; background: ${progressColor}"></div>
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = `
+        <h3 class="employee-name">${currentEmployee.name} <span class="badge badge-primary">${currentEmployee.code}</span></h3>
+        <div class="employee-details">
+          <div>แผนก: ${currentEmployee.section}</div>
+          <div>ตำแหน่ง: ${currentEmployee.position}</div>
+        </div>
+        ${progressBarsHTML}
+      `;
+    }
+
+
+    function updateLeaveBalance() {
+      if (!currentEmployee) return;
+      const leaveType = document.getElementById('leaveType').value;
+      let remaining = 0;
+      let used = 0;
+      switch(leaveType) {
+        case 'สาย':
+          remaining = currentEmployee.late;
+          used = currentEmployee.used['สาย'];
+          break;
+        case 'ลาป่วย':
+          remaining = currentEmployee.sick;
+          used = currentEmployee.used['ลาป่วย'];
+          break;
+        case 'ลากิจ':
+          remaining = currentEmployee.business;
+          used = currentEmployee.used['ลากิจ'];
+          break;
+        case 'ลาพักผ่อน':
+          remaining = currentEmployee.vacation;
+          used = currentEmployee.used['ลาพักผ่อน'];
+          break;
+        case 'ลาคลอด':
+          remaining = currentEmployee.maternity;
+          used = currentEmployee.used['ลาคลอด'];
+          break;
+        case 'ลาบวช':
+          remaining = currentEmployee.ordination;
+          used = currentEmployee.used['ลาบวช'];
+          break;
+        default:
+          remaining = 0;
+          used = 0;
+      }
+      document.getElementById('leaveBalance').textContent = remaining;
+      const max = used + remaining;
+      let progressPercent = max > 0 ? (used / max) * 100 : 0;
+      document.getElementById('leaveProgressBar').style.width = `${progressPercent}%`;
+      const leavePeriodGroup = document.getElementById('leavePeriodGroup');
+      const totalDaysInput = document.getElementById('totalDays');
+      if (leaveType === 'ลากิจ' || leaveType === 'ลาป่วย') {
+        leavePeriodGroup.style.display = 'block';
+        totalDaysInput.step = '0.5';
+        totalDaysInput.min = '0.5';
+      } else {
+        leavePeriodGroup.style.display = 'none';
+        document.getElementById('leavePeriod').value = 'เต็มวัน';
+        totalDaysInput.step = '1';
+        totalDaysInput.min = '1';
+      }
+      calculateDays();
+    }
+
+
+    function updateLeavePeriod() {
+      calculateDays();
+    }
+
+
+    function calculateDays() {
+      const manual = document.getElementById('manualDays').checked;
+      if (manual) return;
+      const period = document.getElementById('leavePeriod').value;
+      if (period !== 'เต็มวัน') {
+        document.getElementById('totalDays').value = 0.5;
+        return;
+      }
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      if (startDate && endDate && endDate >= startDate) {
+        const timeDiff = endDate.getTime() - startDate.getTime();
+        const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+        document.getElementById('totalDays').value = dayDiff;
+      } else {
+        document.getElementById('totalDays').value = '';
+      }
+    }
+
+
+    function toggleManualDays() {
+      const manualDays = document.getElementById('manualDays').checked;
+      const totalDaysInput = document.getElementById('totalDays');
+      if (manualDays) {
+        totalDaysInput.removeAttribute('readonly');
+      } else {
+        totalDaysInput.setAttribute('readonly', true);
+        calculateDays();
+      }
+    }
+
+
+    function submitLeave() {
+      const leaveType = document.getElementById('leaveType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const totalDays = document.getElementById('totalDays').value;
+      let remark = document.getElementById('remark').value;
+      const period = document.getElementById('leavePeriod').value;
+      if (!leaveType || !startDate || !endDate || !totalDays) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ข้อมูลไม่ครบถ้วน',
+          text: 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนส่งคำขอ'
+        });
+        return;
+      }
+      if (period !== 'เต็มวัน') {
+        remark = period + (remark ? '-' + remark : '');
+      }
+      Swal.fire({
+        title: 'ยืนยันการส่งคำขอลา',
+        html: `
+          <p>ประเภท: <b>${leaveType}</b></p>
+          <p>วันที่เริ่ม: <b>${formatThaiDate(startDate)}</b></p>
+          <p>วันที่สิ้นสุด: <b>${formatThaiDate(endDate)}</b></p>
+          <p>จำนวนวัน: <b>${totalDays} วัน</b></p>
+          <p>หมายเหตุ: <b>${remark || 'ไม่ระบุ'}</b></p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ส่งคำขอ',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const record = {
+            code: currentEmployee.code,
+            type: leaveType,
+            start: startDate,
+            finish: endDate,
+            total: totalDays,
+            remark: remark
+          };
+          Swal.fire({
+            title: 'กำลังบันทึกการลา',
+            text: 'กรุณารอสักครู่...',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+          google.script.run.withSuccessHandler(function(result) {
+            Swal.close();
+            if (result.success) {
+              Swal.fire({
+                icon: 'success',
+                title: 'บันทึกการลาสำเร็จ',
+                html: `${result.message}<br><br>เลขที่เอกสารอ้างอิง: <b>${result.refNum}</b>`
+              }).then(() => {
+                resetLeaveForm();
+                google.script.run.withSuccessHandler(function(newResult) {
+                  if (newResult.success) {
+                    currentEmployee = newResult.employee;
+                    loadUserData();
+                    updateLeaveBalance();
+                  }
+                }).verifyPassword('user', currentEmployee.code, currentUser.password);
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'บันทึกการลาไม่สำเร็จ',
+                text: result.message
+              });
+            }
+          }).withFailureHandler(function(error) {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: error.message
+            });
+          }).submitLeaveRecord(record, currentUser.type === 'admin' ? '' : currentEmployee.code, currentUser.type === 'admin' ? '' : currentUser.password);
+        }
+      });
+    }
+
+
+    function resetLeaveForm() {
+      document.getElementById('leaveType').value = '';
+      document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('endDate').value = '';
+      document.getElementById('totalDays').value = '1';
+      document.getElementById('remark').value = '';
+      document.getElementById('manualDays').checked = false;
+      document.getElementById('leavePeriod').value = 'เต็มวัน';
+      document.getElementById('leavePeriodGroup').style.display = 'none';
+      document.getElementById('totalDays').setAttribute('readonly', true);
+      updateLeaveBalance();
+    }
+
+
+    function logoutApprover() {
+      approverName = null;
+      switchToLogin();
+      Swal.fire({
+        icon: 'success',
+        title: 'ออกจากระบบสำเร็จ',
+        text: 'คุณได้ออกจากระบบเรียบร้อยแล้ว',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+
+
+    function showApprovalData(dataObj) {
+      let dataArray = dataObj.data.slice(1);
+      let admins = dataObj.admins;
+      user1 = admins[0];
+      user2 = admins[1];
+
+
+      $(document).ready(function() {
+        approvalTable = $('#approvalTable').DataTable({
+          data: dataArray,
+          columns: [
+            { title: 'เลขที่ใบลา', data: 10 },
+            { title: 'ชื่อ สกุล', data: 2 },
+            {
+              title: 'วันที่ลา',
+              render: function(data, type, row) {
+                return formatThaiDate(row[6]) + ' ถึง ' + formatThaiDate(row[7]);
+              }
+            },
+            { title: 'ประเภท', data: 5 },
+            { title: 'จำนวน', data: 8 },
+            {
+              title: 'ผู้อนุมัติคนที่ 1',
+              data: 18,
+              render: function(data, type, row) {
+                if (approverName === user1) {
+                  if (data !== '') {
+                    return `<span onclick="removeApprovalStatus(this)" style="cursor:pointer;">${data}</span>`;
+                  } else {
+                    return `<select class="form-select form-select-sm" onchange="editApprovalStatus(this, value)">
+                      <option selected disabled value="">เลือกสถานะ</option>
+                      <option>อนุมัติ</option>
+                      <option>ไม่อนุมัติ</option>
+                    </select>`;
+                  }
+                } else {
+                  return data;
+                }
+              }
+            },
+            { title: 'หมายเหตุ01', data: 19 },
+            {
+              title: 'ผู้อนุมัติคนที่ 2',
+              data: 20,
+              render: function(data, type, row) {
+                if (approverName === user2) {
+                  if (data !== '') {
+                    return `<span onclick="removeApprovalStatus(this)" style="cursor:pointer;">${data}</span>`;
+                  } else {
+                    return `<select class="form-select form-select-sm" onchange="editApprovalStatus(this, value)">
+                      <option selected disabled value="">เลือกสถานะ</option>
+                      <option>อนุมัติ</option>
+                      <option>ไม่อนุมัติ</option>
+                    </select>`;
+                  }
+                } else {
+                  return data;
+                }
+              }
+            },
+            { title: 'หมายเหตุ02', data: 21 }
+          ],
+          order: [[0, 'desc']],  // เรียงจากมากไปน้อย
+          language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json'
+          },
+          responsive: {
+            details: {
+              display: $.fn.dataTable.Responsive.display.modal({
+                header: function(row) {
+                  var data = row.data();
+                  return 'รายละเอียดสำหรับเลขที่ใบลา: ' + data[10];
+                }
+              }),
+              renderer: $.fn.dataTable.Responsive.renderer.tableAll({
+                tableClass: 'table table-sm table-bordered'
+              })
+            }
+          },
+          fixedHeader: {
+            header: true
+          },
+          fixedColumns: {
+            leftColumns: 1
+          },
+          scrollX: true,
+          columnDefs: [
+            {
+              targets: 0,
+              type: 'string',  // สำคัญมาก!
+              responsivePriority: 1,
+              className: 'all dtfc-fixed-left'
+            },
+            {
+              targets: [1, 5, 6, 7, 8],
+              responsivePriority: 2,
+              className: 'all'
+            },
+            {
+              targets: [2, 3, 4],
+              responsivePriority: 3
+            }
+          ],
+          createdRow: function(row, data, index) {
+            if (data[18] === 'อนุมัติ') {
+              $('td', row).eq(5).addClass('Approve');
+            } else if (data[18] === 'ไม่อนุมัติ') {
+              $('td', row).eq(5).addClass('Reject');
+            }
+            if (data[20] === 'อนุมัติ') {
+              $('td', row).eq(7).addClass('Approve');
+            } else if (data[20] === 'ไม่อนุมัติ') {
+              $('td', row).eq(7).addClass('Reject');
+            }
+          },
+          drawCallback: function(settings) {
+            isChangingPage = false;
+            if (approvalTable) {
+              approvalTable.fixedHeader.adjust();
+            }
+          },
+          initComplete: function() {
+            this.api().fixedHeader.adjust();
+          }
+        });
+        $('#approvalTable').on('page.dt', function() {
+          isChangingPage = true;
+        });
+      });
+    }
+
+
+    async function editApprovalStatus(el, value) {
+      isUpdating = true;
+      let row = approvalTable.row($(el).closest('tr'));
+      let refNum = row.data()[10];
+      let statusIndex = (approverName === user1) ? 5 : 7;
+      let remarkIndex = (approverName === user1) ? 6 : 8;
+      let currentPage = approvalTable.page();
+      let rowNode = row.node();
+      let rowPosition = $(rowNode).offset() ? $(rowNode).offset().top : 0;
+      let scrollY = window.scrollY;
+      let isChildShown = row.child.isShown();
+
+
+      google.script.run.withSuccessHandler(async (dataArray) => {
+        let rowData = row.data();
+        rowData[18 + (approverName === user1 ? 0 : 2)] = dataArray;
+        row.data(rowData).draw(false);
+
+
+        let statusCell = $(row.node()).find('td').eq(statusIndex);
+        statusCell.removeClass('Approve Reject');
+        if (dataArray === 'อนุมัติ') {
+          statusCell.addClass('Approve');
+        } else if (dataArray === 'ไม่อนุมัติ') {
+          statusCell.addClass('Reject');
+        }
+
+
+        if (dataArray === 'ไม่อนุมัติ') {
+          await promptApprovalRemark(refNum, remarkIndex, currentPage, rowPosition, scrollY, isChildShown, row);
+        } else if (dataArray === 'อนุมัติ') {
+          google.script.run.withSuccessHandler((remarkData) => {
+            let updatedRowData = row.data();
+            updatedRowData[19 + (approverName === user1 ? 0 : 2)] = remarkData;
+            row.data(updatedRowData).draw(false);
+            approvalTable.page(currentPage).draw(false);
+            if (isChildShown) {
+              row.child.show();
+            }
+            $('html, body').scrollTop(rowPosition);
+            isUpdating = false;
+          }).withFailureHandler(() => {
+            isUpdating = false;
+          }).setApprovalRemark(refNum, "", approverName);
+          return;
+        }
+        approvalTable.page(currentPage).draw(false);
+        if (isChildShown) {
+          row.child.show();
+        }
+        $('html, body').scrollTop(rowPosition);
+        isUpdating = false;
+      }).withFailureHandler(() => {
+        isUpdating = false;
+      }).setApprovalStatus(refNum, value, approverName);
+    }
+
+
+    async function promptApprovalRemark(refNum, remarkIndex, currentPage, rowPosition, scrollY, isChildShown, row) {
+      isUpdating = true;
+      const { value: text } = await Swal.fire({
+        input: 'textarea',
+        inputLabel: 'หมายเหตุ',
+        inputPlaceholder: 'กรุณาใส่หมายเหตุ...',
+        inputAttributes: {
+          'aria-label': 'กรุณาใส่หมายเหตุ',
+          'style': 'background: #2a2a2a; color: #f8f9fa; border: 1px solid #6c757d; border-radius: 6px; padding: 10px; font-size: 1rem;'
+        },
+        showCancelButton: false,
+        allowOutsideClick: false,
+        confirmButtonColor: '#1a237e',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'กรุณาพิมพ์ข้อความ!';
+          }
+        }
+      });
+
+
+      google.script.run.withSuccessHandler((dataArray) => {
+        let rowData = row.data();
+        rowData[19 + (approverName === user1 ? 0 : 2)] = dataArray;
+        row.data(rowData).draw(false);
+        approvalTable.page(currentPage).draw(false);
+        if (isChildShown) {
+          row.child.show();
+        }
+        $('html, body').scrollTop(rowPosition);
+        isUpdating = false;
+      }).withFailureHandler(() => {
+        isUpdating = false;
+      }).setApprovalRemark(refNum, text, approverName);
+    }
+
+
+    function removeApprovalStatus(el) {
+      isUpdating = true;
+      let row = approvalTable.row($(el).closest('tr'));
+      let refNum = row.data()[10];
+      let statusIndex = (approverName === user1) ? 5 : 7;
+      let remarkIndex = (approverName === user1) ? 6 : 8;
+      let currentPage = approvalTable.page();
+      let rowNode = row.node();
+      let rowPosition = $(rowNode).offset() ? $(rowNode).offset().top : 0;
+      let scrollY = window.scrollY;
+      let isChildShown = row.child.isShown();
+
+
+      google.script.run.withSuccessHandler((dataArray) => {
+        let rowData = row.data();
+        rowData[18 + (approverName === user1 ? 0 : 2)] = dataArray;
+        rowData[19 + (approverName === user1 ? 0 : 2)] = '';
+        row.data(rowData).draw(false);
+        approvalTable.page(currentPage).draw(false);
+        if (isChildShown) {
+          row.child.show();
+        }
+        $('html, body').scrollTop(rowPosition);
+        let statusCell = $(row.node()).find('td').eq(statusIndex);
+        statusCell.removeClass('Approve Reject');
+        isUpdating = false;
+      }).withFailureHandler(() => {
+        isUpdating = false;
+      }).setApprovalStatus(refNum, "", approverName);
+    }
+
+
+    function refreshApprovalData() {
+      if (isChangingPage || $('.modal.show').length > 0 || isUpdating) {
+        return;
+      }
+      let currentPage = approvalTable.page();
+      let savedScrollY = window.scrollY;
+      let currentData = approvalTable.data().toArray();
+      let currentDataStr = JSON.stringify(currentData);
+
+
+      google.script.run.withSuccessHandler((dataObj) => {
+        let newData = dataObj.data.slice(1);
+        let newDataStr = JSON.stringify(newData);
+
+
+        if (newDataStr !== currentDataStr) {
+          approvalTable.clear().rows.add(newData).draw(false);
+          approvalTable.page(currentPage).draw(false);
+          window.scrollTo(0, savedScrollY);
+          approvalTable.fixedHeader.adjust();
+        }
+      }).withFailureHandler((error) => {
+        console.error('Refresh error:', error);
+      }).getApprovalData();
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const startDateInput = document.getElementById('startDate');
+      if (startDateInput) {
+        startDateInput.value = new Date().toISOString().split('T')[0];
+      }
+    });
+  </script>
+</body>
+</html>
